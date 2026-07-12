@@ -4,7 +4,7 @@
   "type": "module",
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=7.0.0"
+    "npm": ">=8.3.0"
   },
   "scripts": {
     "dev": "evidence dev --open /",
@@ -16,5 +16,11 @@
     "@evidence-dev/core-components": "latest",
     "@evidence-dev/duckdb": "latest",
     "@evidence-dev/evidence": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "overrides": {
+    "typescript": "^5.0.0"
   }
 }
