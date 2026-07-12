@@ -1,0 +1,26 @@
+name: subnet_pipeline
+version: "1.0.0"
+profile: subnet_pipeline
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Post-Dec-2025-halving chain constants. Adjust when the mechanics change
+  # (they will — emission formula changed twice in H1 2026 alone).
+  tao_emission_per_day: 3600
+  # Alpha emitted into each subnet/day (base 1 a/block, emitted at 2x,
+  # ~7200 blocks/day). Sell-pressure ceiling approximation for the
+  # absorption ratio — tune once you validate against taostats numbers.
+  alpha_emission_per_day: 14400
+  flow_zscore_window_days: 30
+
+models:
+  subnet_pipeline:
+    staging:
+      +materialized: view
+    marts:
+      # Gold models land as Parquet on R2 (external_root in profiles.yml)
+      +materialized: external
+      +format: parquet

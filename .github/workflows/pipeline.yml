@@ -1,0 +1,90 @@
+name: pipeline
+
+on:
+  schedule:
+    - cron: "23 5 * * *" # daily 05:23 UTC (offset avoids top-of-hour congestion)
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+env:
+  TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_BUCKET: ${{ vars.R2_BUCKET || 'bittensor-lake' }}
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+jobs:
+  elt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Ingest (bronze -> R2)
+        run: python -m ingest.run_ingest --cadence daily
+
+      - name: Transform (dbt -> gold parquet on R2)
+        working-directory: transform
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt build
+
+      - name: Alerts
+        run: python -m alerts.check_alerts
+
+  dashboard:
+    needs: elt
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync gold parquet from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          aws s3 cp "s3://${R2_BUCKET}/gold/" dashboard/sources/subnets/data/ \
+            --recursive \
+            --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          ls -la dashboard/sources/subnets/data/
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build Evidence site
+        working-directory: dashboard
+        run: |
+          npm install
+          npm run sources
+          npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/build
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

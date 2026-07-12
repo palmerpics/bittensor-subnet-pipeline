@@ -1,0 +1,6 @@
+# In-memory DuckDB; the source queries below read the gold Parquet files
+# that the pipeline workflow syncs into sources/subnets/data/ before build.
+name: subnets
+type: duckdb
+options:
+  filename: ":memory:"

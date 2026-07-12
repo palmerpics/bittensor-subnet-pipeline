@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.env
+
+# dbt
+transform/target/
+transform/dbt_packages/
+transform/logs/
+logs/
+
+# duckdb scratch
+*.duckdb
+*.duckdb.wal
+
+# Evidence
+dashboard/node_modules/
+dashboard/.evidence/
+dashboard/build/
+# gold parquet is synced at build time, never committed
+dashboard/sources/subnets/data/*.parquet

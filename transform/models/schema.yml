@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_pool_snapshots
+    description: Parsed pool snapshots from bronze (one row per subnet per fetch).
+    columns:
+      - name: netuid
+        data_tests: [not_null]
+      - name: alpha_price_tao
+        description: Alpha token price denominated in TAO.
+
+  - name: fct_subnet_daily
+    description: >
+      Daily subnet metrics — price returns vs TAO, flow z-score, absorption
+      ratio, emission share trend, liquidity, root_prop, sentiment.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [netuid, as_of_date]
+          config:
+            enabled: false # flip on after adding dbt_utils to packages.yml
+    columns:
+      - name: netuid
+        data_tests: [not_null]
+      - name: as_of_date
+        data_tests: [not_null]
+
+  - name: dim_subnet_latest
+    description: Latest snapshot per subnet with dereg risk proxy rank.
+    columns:
+      - name: netuid
+        data_tests: [not_null, unique]

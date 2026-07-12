@@ -1,0 +1,1 @@
+{"fetched_at": "2026-07-10T05:11:00+00:00", "endpoint": "/fixture", "run_id": "abc123", "row_count": 3, "data": [{"netuid": 1, "timestamp": "2026-07-10T00:00:00Z", "net_tao_flow": "-1000000000000"}, {"netuid": 3, "timestamp": "2026-07-10T00:00:00Z", "net_tao_flow": "1000000000000"}, {"netuid": 64, "timestamp": "2026-07-10T00:00:00Z", "net_tao_flow": "62000000000000"}]}

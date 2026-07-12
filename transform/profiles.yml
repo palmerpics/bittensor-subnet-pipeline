@@ -1,0 +1,27 @@
+subnet_pipeline:
+  target: prod
+  outputs:
+    prod:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'target/subnets.duckdb') }}"
+      threads: 4
+      extensions:
+        - httpfs
+        - json
+      settings:
+        s3_region: "auto"
+        s3_endpoint: "{{ env_var('R2_ACCOUNT_ID', '') }}.r2.cloudflarestorage.com"
+        s3_access_key_id: "{{ env_var('R2_ACCESS_KEY_ID', '') }}"
+        s3_secret_access_key: "{{ env_var('R2_SECRET_ACCESS_KEY', '') }}"
+        s3_url_style: "path"
+        s3_use_ssl: true
+      # Gold (marts) models write Parquet here via materialized: external
+      external_root: "s3://{{ env_var('R2_BUCKET', 'bittensor-lake') }}/gold"
+
+    # Local dev/test: point BRONZE_ROOT at fixtures, gold lands in target/gold
+    #   DBT_PROFILES_DIR=. BRONZE_ROOT=../fixtures/bronze dbt build --target dev
+    dev:
+      type: duckdb
+      path: "target/dev.duckdb"
+      threads: 4
+      external_root: "target/gold"
