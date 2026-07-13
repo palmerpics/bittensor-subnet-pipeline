@@ -1,0 +1,7 @@
+plugins:
+  components:
+    "@evidence-dev/core-components": {}
+  datasources:
+    "@evidence-dev/duckdb": {}
+deployment:
+  basePath: /bittensor-subnet-pipeline
