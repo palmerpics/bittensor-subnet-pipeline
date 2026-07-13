@@ -76,7 +76,7 @@ jobs:
       - name: Build Evidence site
         working-directory: dashboard
         run: |
-          npm install --legacy-peer-deps
+          npm install
           npm run sources
           npm run build
 

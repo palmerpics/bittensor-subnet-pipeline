@@ -20,4 +20,4 @@ alerts-dev:        ## alert rules against local gold
 	GOLD_ROOT=transform/target/gold python -m alerts.check_alerts
 
 dash:              ## local Evidence dev server (needs parquet in sources/subnets/data)
-	cd dashboard && npm install --legacy-peer-deps && npm run sources && npm run dev
+	cd dashboard && npm install && npm run sources && npm run dev
